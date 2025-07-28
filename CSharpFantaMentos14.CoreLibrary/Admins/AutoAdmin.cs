@@ -1,58 +1,38 @@
-﻿using System;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace CSharpFantaMentos14.CoreLibrary.Admins;
 
-public sealed class AutoAdmin() : IStationAdmin
+public sealed class AutoAdmin() : IAdmin
 {
-    public TimeSpan ChangePricesTimeLeft { get; private set; } = TimeSpan.FromMinutes(60);
+    public int CycleLeft { get; private set; } = 60;
 
-    public void Update(TimeSpan current_time, FuelStation fuel_station)
+    public void Update(FuelStation fuel_station)
     {
-        foreach(FuelPump pump in fuel_station.FuelPumps)
+        foreach(KeyValuePair<string, FuelPump> pair in fuel_station.PumpDictionary)
         {
-            if(pump.LiterCount < 100)
+            if(pair.Value.LiterCount < 100)
             {
-                double price = fuel_station.PriceList.Prices.First(pair => pair.name == pump.Name).price * 500;
-                if(fuel_station.Balance < price)
-                {
-                    continue;
-                }
-                pump.Refill(500);
-                fuel_station.Balance -= price;
+                pair.Value.Refill(500);
             }
         }
         if(fuel_station.CoffeeMachine.CupCount < 10)
         {
-            double price = fuel_station.PriceList.Prices.First(pair => pair.name is "Coffee").price * 50;
-            if(fuel_station.Balance >= price)
-            {
-                fuel_station.CoffeeMachine.Refill(50);
-                fuel_station.Balance -= price;
-            }
+            fuel_station.CoffeeMachine.Refill(50);
         }
-        if(ChangePricesTimeLeft <= TimeSpan.Zero)
+        if(--CycleLeft <= 0)
         {
-            foreach(FuelPump pump in fuel_station.FuelPumps)
+            foreach(KeyValuePair<string, FuelPump> pair in fuel_station.PumpDictionary)
             {
-                pump.PricePerLiter += pump.PricePerLiter * 0.1 * Random.Shared.Next(-1, 2) * Random.Shared.NextDouble();
+                pair.Value.PricePerLiter = Game.ChangePrice(pair.Value.PricePerLiter);
             }
-            fuel_station.CoffeeMachine.PricePerCup += fuel_station.CoffeeMachine.PricePerCup * 0.1 * Random.Shared.Next(-1, 2) * Random.Shared.NextDouble();
-            ChangePricesTimeLeft = TimeSpan.FromMinutes(60);
+            fuel_station.CoffeeMachine.PricePerCup = Game.ChangePrice(fuel_station.CoffeeMachine.PricePerCup);
+            CycleLeft = 60;
         }
-        ChangePricesTimeLeft -= TimeSpan.FromMinutes(1);
-        while(fuel_station.CustomerQueue.Count > 0)
+        while(fuel_station.customer_queue.Count > 0)
         {
-            Customer customer = fuel_station.CustomerQueue.Dequeue();
-            FuelPump pump = fuel_station.FuelPumps.First(pump => pump.Name == customer.FuelName);
-            if(pump.LiterCount >= customer.LiterCount)
-            {
-                fuel_station.Balance += pump.Buy(customer.LiterCount);
-            }
-            if(fuel_station.CoffeeMachine.CupCount >= customer.CupCount)
-            {
-                fuel_station.Balance += fuel_station.CoffeeMachine.Buy(customer.CupCount);
-            }
+            Customer customer = fuel_station.customer_queue.Dequeue();
+            fuel_station.PumpDictionary[customer.FuelName].Buy(customer.LiterCount);
+            fuel_station.CoffeeMachine.Buy(customer.CupCount);
         }
     }
 }

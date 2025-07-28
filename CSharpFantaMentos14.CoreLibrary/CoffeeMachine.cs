@@ -1,16 +1,15 @@
 ﻿using System;
-using CSharpFantaMentos14.CoreLibrary.Transactions;
 
 namespace CSharpFantaMentos14.CoreLibrary;
 
-public sealed class CoffeeMachine(FuelStation fuel_station, uint cup_count, double price_per_cup)
+public sealed class CoffeeMachine(FuelStation fuel_station)
 {
     public FuelStation FuelStation { get; } = fuel_station;
-    public uint CupCount { get; private set; } = cup_count;
+    public uint CupCount { get; private set; } = 50;
     public double PricePerCup
     {
         get => field;
-        private set
+        set
         {
             if(value < 0.0)
             {
@@ -18,30 +17,31 @@ public sealed class CoffeeMachine(FuelStation fuel_station, uint cup_count, doub
             }
             field = value;
         }
-    } = price_per_cup;
+    } = 1.0;
 
-    public double Buy(TimeSpan current_time, uint cup_count)
+    public bool Buy(uint cup_count)
     {
         if(cup_count > CupCount)
         {
-            throw new ArgumentOutOfRangeException(nameof(cup_count), "Not enough cups available");
+            return false;
         }
+        BuyCoffeeTransaction transaction = new(FuelStation.Model.Game.CurrentTime, cup_count, PricePerCup);
+        FuelStation.transactions.Add(transaction);
+        FuelStation.Balance += cup_count * PricePerCup;
         CupCount -= cup_count;
-        double price = PricePerCup * cup_count;
-        BuyCoffeeTransaction transaction = new(current_time, cup_count, price);
-        FuelStation.Transactions.Add(transaction);
-        return price;
+        return true;
     }
-    public void Refill(TimeSpan current_time, uint cup_count, double price)
+    public bool Refill(uint cup_count)
     {
+        double price = FuelStation.Model.GlobalPriceState.CoffeePrice;
+        if(price * cup_count > FuelStation.Balance)
+        {
+            return false;
+        }
+        RefillCoffeeTransaction transaction = new(FuelStation.Model.Game.CurrentTime, cup_count, price);
+        FuelStation.transactions.Add(transaction);
+        FuelStation.Balance -= price;
         CupCount += cup_count;
-        RefillCoffeeTransaction transaction = new(current_time, cup_count, price);
-        FuelStation.Transactions.Add(transaction);
-    }
-    public void SetPrice(TimeSpan current_time, double price)
-    {
-        PricePerCup = price;
-        ChangePriceTransaction transaction = new(current_time, "Coffee", price);
-        FuelStation.Transactions.Add(transaction);
+        return true;
     }
 }

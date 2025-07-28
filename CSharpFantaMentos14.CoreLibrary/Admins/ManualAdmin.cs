@@ -1,64 +1,90 @@
 ﻿using System;
-using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
 namespace CSharpFantaMentos14.CoreLibrary.Admins;
 
-public sealed class ManualAdmin() : IStationAdmin
+public sealed class ManualAdmin() : IAdmin
 {
-    private ConcurrentQueue<Action<ManualAdmin, TimeSpan, FuelStation>> Actions { get; } = [];
+    private ConcurrentQueue<Action<FuelStation>> Actions { get; } = [];
 
-    public void RefillFuel(FuelPump pump, uint liter_count)
+    public Task<bool> RefillFuelAsync(string name, uint liter_count)
     {
-        Actions.Enqueue(delegate(ManualAdmin admin, TimeSpan current_time, FuelStation fuel_station)
+        TaskCompletionSource<bool> task_source = new();
+        Actions.Enqueue(void(FuelStation fuel_station) =>
         {
-            double price = fuel_station.PriceList.Prices.First(pair => pair.name == pump.Name).price * liter_count;
-            if(fuel_station.Balance < price)
+            if(fuel_station.PumpDictionary.TryGetValue(name, out FuelPump? pump) is false)
             {
-                return;
+                task_source.SetException(new ArgumentException($"Fuel pump with name '{name}' not found"));
             }
-            pump.Refill(liter_count);
-            fuel_station.Balance -= price;
-        });
-    }
-    public void RefillCoffee(uint cup_count)
-    {
-        Actions.Enqueue(delegate(ManualAdmin admin, TimeSpan current_time, FuelStation fuel_station)
-        {
-            double price = fuel_station.PriceList.Prices.First(pair => pair.name is "Coffee").price * cup_count;
-            if(fuel_station.Balance < price)
+            else
             {
-                return;
+                task_source.SetResult(pump.Refill(liter_count));
             }
-            fuel_station.CoffeeMachine.Refill(cup_count);
-            fuel_station.Balance -= price;
         });
+        return task_source.Task;
     }
-    public void ChangeFuelPrice(FuelPump pump, double price)
+    public Task<bool> RefillCoffeeAsync(uint cup_count)
     {
-        Actions.Enqueue(delegate(ManualAdmin admin, TimeSpan current_time, FuelStation fuel_station)
+        TaskCompletionSource<bool> task_source = new();
+        Actions.Enqueue(void(FuelStation fuel_station) =>
         {
-            pump.PricePerLiter = price;
+            task_source.SetResult(fuel_station.CoffeeMachine.Refill(cup_count));
         });
+        return task_source.Task;
     }
-    public void Update(TimeSpan current_time, FuelStation fuel_station)
+    public Task ChangeFuelPriceAsync(string name, double price)
     {
-        foreach(Action<ManualAdmin, TimeSpan, FuelStation> action in Actions)
+        TaskCompletionSource task_source = new();
+        Actions.Enqueue(void(FuelStation fuel_station) =>
         {
-            action(this, current_time, fuel_station);
+            if(fuel_station.PumpDictionary.TryGetValue(name, out FuelPump? pump) is false)
+            {
+                task_source.SetException(new ArgumentException($"Fuel pump with name '{name}' not found"));
+            }
+            else
+            {
+                try
+                {
+                    pump.PricePerLiter = price;
+                    task_source.SetResult();
+                }
+                catch(Exception exception)
+                {
+                    task_source.SetException(exception);
+                }
+            }
+        });
+        return task_source.Task;
+    }
+    public Task ChangeCoffeePriceAsync(double price)
+    {
+        TaskCompletionSource task_source = new();
+        Actions.Enqueue(void(FuelStation fuel_station) =>
+        {
+            try
+            {
+                fuel_station.CoffeeMachine.PricePerCup = price;
+                task_source.SetResult();
+            }
+            catch(Exception exception)
+            {
+                task_source.SetException(exception);
+            }
+        });
+        return task_source.Task;
+    }
+    public void Update(FuelStation fuel_station)
+    {
+        foreach(Action<FuelStation> action in Actions)
+        {
+            action(fuel_station);
         }
-        while(fuel_station.CustomerQueue.Count > 0)
+        while(fuel_station.customer_queue.Count > 0)
         {
-            Customer customer = fuel_station.CustomerQueue.Dequeue();
-            FuelPump pump = fuel_station.FuelPumps.First(pump => pump.Name == customer.FuelName);
-            if(pump.LiterCount >= customer.LiterCount)
-            {
-                fuel_station.Balance += pump.Buy(customer.LiterCount);
-            }
-            if(fuel_station.CoffeeMachine.CupCount >= customer.CupCount)
-            {
-                fuel_station.Balance += fuel_station.CoffeeMachine.Buy(customer.CupCount);
-            }
+            Customer customer = fuel_station.customer_queue.Dequeue();
+            fuel_station.PumpDictionary[customer.FuelName].Buy(customer.LiterCount);
+            fuel_station.CoffeeMachine.Buy(customer.CupCount);
         }
     }
 }

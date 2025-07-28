@@ -1,17 +1,16 @@
 ﻿using System;
-using CSharpFantaMentos14.CoreLibrary.Transactions;
 
 namespace CSharpFantaMentos14.CoreLibrary;
 
-public sealed class FuelPump(FuelStation fuel_station, string name, uint liter_count, double price_per_liter)
+public sealed class FuelPump(string name, FuelStation fuel_station)
 {
     public string Name { get; } = name;
     public FuelStation FuelStation { get; } = fuel_station;
-    public uint LiterCount { get; private set; } = liter_count;
+    public uint LiterCount { get; private set; } = 500;
     public double PricePerLiter
     {
         get => field;
-        private set
+        set
         {
             if(value < 0.0)
             {
@@ -19,30 +18,31 @@ public sealed class FuelPump(FuelStation fuel_station, string name, uint liter_c
             }
             field = value;
         }
-    } = price_per_liter;
+    } = 2.5;
 
-    public double Buy(TimeSpan current_time, uint liter_count)
+    public bool Buy(uint liter_count)
     {
         if(liter_count > LiterCount)
         {
-            throw new ArgumentOutOfRangeException(nameof(liter_count), "Not enough fuel available");
+            return false;
         }
+        BuyFuelTransaction transaction = new(FuelStation.Model.Game.CurrentTime, Name, liter_count, PricePerLiter);
+        FuelStation.transactions.Add(transaction);
+        FuelStation.Balance += liter_count * PricePerLiter;
         LiterCount -= liter_count;
-        double price = liter_count * PricePerLiter;
-        BuyFuelTransaction transaction = new(current_time, Name, liter_count, price);
-        FuelStation.Transactions.Add(transaction);
-        return price;
+        return true;
     }
-    public void Refill(TimeSpan current_time, uint liter_count, double price)
+    public bool Refill(uint liter_count)
     {
-        RefillFuelTransaction transaction = new(current_time, Name, liter_count, price);
-        FuelStation.Transactions.Add(transaction);
+        double price = FuelStation.Model.GlobalPriceState.FuelPriceDictionary[Name];
+        if(price * liter_count > FuelStation.Balance)
+        {
+            return false;
+        }
+        RefillFuelTransaction transaction = new(FuelStation.Model.Game.CurrentTime, Name, liter_count, price);
+        FuelStation.transactions.Add(transaction);
+        FuelStation.Balance -= price;
         LiterCount += liter_count;
-    }
-    public void SetPrice(TimeSpan current_time, double price)
-    {
-        PricePerLiter = price;
-        ChangePriceTransaction transaction = new(current_time, Name, price);
-        FuelStation.Transactions.Add(transaction);
+        return true;
     }
 }

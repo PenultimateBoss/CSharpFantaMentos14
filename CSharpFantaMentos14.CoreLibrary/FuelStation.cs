@@ -1,47 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CSharpFantaMentos14.CoreLibrary.Admins;
-using CSharpFantaMentos14.CoreLibrary.Transactions;
 
 namespace CSharpFantaMentos14.CoreLibrary;
 
 public sealed class FuelStation
 {
-    internal IStationAdmin Admin { get; }
-    internal PriceList PriceList { get; }
-    internal CoffeeMachine CoffeeMachine { get; }
-    internal HashSet<FuelPump> FuelPumps { get; }
-    internal Queue<Customer> CustomerQueue { get; }
-    internal List<ITransaction> Transactions { get; }
-    public string Name { get; }
-    public double Balance { get; internal set; }
+    internal Queue<Customer> customer_queue = [];
+    internal List<Transaction> transactions = [];
+    internal Dictionary<string, FuelPump> pump_dictionary = [];
 
-    public FuelStation(string name, PriceList price_list, IStationAdmin admin)
+    public string Name { get; }
+    public IAdmin Admin { get; }
+    public FuelStationModel Model { get; }
+    public CoffeeMachine CoffeeMachine { get; }
+    public IReadOnlyCollection<Customer> Customers
+    {
+        get => customer_queue;
+    }
+    public IReadOnlyList<Transaction> Transactions
+    {
+        get => transactions;
+    }
+    public IReadOnlyDictionary<string, FuelPump> PumpDictionary
+    {
+        get => pump_dictionary;
+    }
+    public double Balance { get; internal set; } = 500.0;
+
+    public FuelStation(string name, IAdmin admin, FuelStationModel model)
     {
         Name = name;
         Admin = admin;
-        FuelPumps = [];
-        Balance = 1000.0;
-        Transactions = [];
-        CustomerQueue = [];
-        PriceList = price_list;
-        CoffeeMachine = new CoffeeMachine(this, 50, 1.0);
-        PriceList.AddPrice("Coffee", 0.9);
+        Model = model;
+        CoffeeMachine = new CoffeeMachine(this);
     }
 
-    public FuelPump AddFuelPump(string name)
+    internal void Update()
     {
-        FuelPump fuel_pump = new(this, name, 1000, 2.5);
-        FuelPumps.Add(fuel_pump);
-        PriceList.AddPrice(name, 2.4);
-        return fuel_pump;
+        Admin.Update(this);
     }
-    public bool RemoveFuelPump(FuelPump fuel_pump)
+    public bool AddFuelPump(string name)
     {
-        return FuelPumps.Remove(fuel_pump);
-    }
-    public void Update(TimeSpan current_time)
+        bool added = pump_dictionary.TryAdd(name, new FuelPump(name, this));
+        if(added is true)
+        {
+            Model.GlobalPriceState.AddFuel(name);
+        }
+        return added;
+    } 
+    public bool RemoveFuelPump(string name)
     {
-        Admin.Update(current_time, this);
+        return pump_dictionary.Remove(name);
     }
 }
