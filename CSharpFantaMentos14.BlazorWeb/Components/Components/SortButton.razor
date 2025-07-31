@@ -1,0 +1,39 @@
+﻿@code
+{
+    [Parameter] public bool? UpDirection { get; set; }
+    [Parameter] public EventCallback<SortButton> OnClick { get; set; }
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+}
+
+<button class="SortButton" @onclick=@OnClickEvent>
+    <div class="Name">@ChildContent</div>
+    <div class="SortDirection">
+        @switch(UpDirection)
+        {
+            case true:
+            {
+                <text>▲</text>
+                break;
+            }
+            case false:
+            {
+                <text>▼</text>
+                break;
+            }
+        }
+    </div>
+</button>
+
+@code
+{
+    private void OnClickEvent()
+    {
+        UpDirection = UpDirection switch
+        {
+            null => false,
+            false => true,
+            true => null,
+        };
+        OnClick.InvokeAsync(this);
+    }
+}

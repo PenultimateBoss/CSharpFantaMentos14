@@ -1,7 +1,13 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 
 namespace CSharpFantaMentos14.CoreLibrary;
 
+[JsonPolymorphic]
+[JsonDerivedType(typeof(BuyFuelTransaction))]
+[JsonDerivedType(typeof(RefillFuelTransaction))]
+[JsonDerivedType(typeof(BuyCoffeeTransaction))]
+[JsonDerivedType(typeof(RefillCoffeeTransaction))]
 public abstract record class Transaction(TimeSpan TransactionTime);
 public sealed record class BuyFuelTransaction(TimeSpan TransactionTime, string FuelName, uint LiterCount, double FuelPrice) : Transaction(TransactionTime);
 public sealed record class RefillFuelTransaction(TimeSpan TransactionTime, string FuelName, uint LiterCount, double GlobalFuelPrice) : Transaction(TransactionTime);

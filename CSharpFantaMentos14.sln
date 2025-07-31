@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36310.24
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpFantaMentos14.CoreLibrary", "CSharpFantaMentos14.CoreLibrary\CSharpFantaMentos14.CoreLibrary.csproj", "{B58772C2-160B-427A-8291-2A2CCDC8508F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpFantaMentos14.BlazorWeb", "CSharpFantaMentos14.BlazorWeb\CSharpFantaMentos14.BlazorWeb.csproj", "{9F8020B0-15F7-45A2-8293-BCC45173D87D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{B58772C2-160B-427A-8291-2A2CCDC8508F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B58772C2-160B-427A-8291-2A2CCDC8508F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B58772C2-160B-427A-8291-2A2CCDC8508F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F8020B0-15F7-45A2-8293-BCC45173D87D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F8020B0-15F7-45A2-8293-BCC45173D87D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F8020B0-15F7-45A2-8293-BCC45173D87D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F8020B0-15F7-45A2-8293-BCC45173D87D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -76,7 +76,7 @@ public sealed class ManualAdmin() : IAdmin
     }
     public void Update(FuelStation fuel_station)
     {
-        foreach(Action<FuelStation> action in Actions)
+        while(Actions.TryDequeue(out Action<FuelStation>? action) is true)
         {
             action(fuel_station);
         }

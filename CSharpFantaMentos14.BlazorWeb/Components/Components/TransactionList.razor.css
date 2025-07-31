@@ -1,0 +1,131 @@
+﻿.TransactionList{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    border: 1px solid black;
+    overflow: auto;
+}
+.TransactionList > *{
+    width: 100%;
+    height: 2em;
+    display: flex;
+    flex-flow: row nowrap;
+}
+.TransactionList > .ControlLine{
+    display: flex;
+    flex-flow: row-reverse nowrap;
+    align-items: center;
+    background-color: lightgray;
+    border-bottom: 1px solid black;
+}
+.TransactionList > .ControlLine > .SaveButton{ 
+    width: auto;
+    height: 90%;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 2px;
+    padding-right: 2px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    background-color: lightgreen;
+    border: 2px solid black;
+}
+.TransactionList > .Head > *{
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: lightsalmon;
+}
+.TransactionList > .Head > .ID{
+    width: 5%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Head > .Operation{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Head > .Day{
+    width: 5%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Head > .Time{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Head > .Type{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Head > .Count{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Head > .Price{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Head > .TotalPrice{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Item > *{
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: lavender;
+}
+.TransactionList > .Item > .ID{
+    width: 5%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Item > .Operation{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Item > .Day{
+    width: 5%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Item > .Time{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Item > .Type{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Item > .Count{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Item > .Price{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}
+.TransactionList > .Item > .TotalPrice{
+    width: 15%;
+    height: 100%;
+    border: 1px solid black;
+}

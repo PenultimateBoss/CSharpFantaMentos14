@@ -17,7 +17,7 @@ public sealed class Game
     #region Instance
     private ManualResetEventSlim RunSignal { get; } = new(true);
     public FuelStationModel FuelStationModel { get; }
-    public TimeSpan CurrentTime { get; private set; } = new(1, 9, 0, 0);
+    public TimeSpan CurrentTime { get; private set; } = new(0, 9, 0, 0);
     public int TimeSpeed
     {
         get => field;
@@ -54,15 +54,20 @@ public sealed class Game
         {
             TimeSpeed = 1;
             RunSignal.Set();
-            CurrentTime = new(CurrentTime.Days, 9, 0, 0);
+            CurrentTime = new(CurrentTime.Days + 1, 9, 0, 0);
 
             DayStarted?.Invoke();
             while(CurrentTime.Hours < 21)
             {
                 RunSignal.Wait();
                 await Task.Delay(1000 / TimeSpeed);
+                CurrentTime += TimeSpan.FromMinutes(1);
                 FuelStationModel.Update();
                 OnUpdate?.Invoke();
+            }
+            foreach(FuelStation station in FuelStationModel.StationDictionary.Values)
+            {
+                station.Balance -= 1000;
             }
             IsRunning = false;
             DayEnded?.Invoke();

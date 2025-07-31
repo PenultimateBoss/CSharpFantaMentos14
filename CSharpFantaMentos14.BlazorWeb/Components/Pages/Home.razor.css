@@ -1,0 +1,337 @@
+﻿.Home{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: lightgray;
+}
+.Home > .ControlLine{
+    width: 100%;
+    height: 5%;
+    display: flex;
+    flex-flow: row-reverse nowrap;
+    align-items: center;
+    border: 1px solid black;
+}
+.Home > .ControlLine > *{
+    width: auto;
+    height: 80%;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 2px;
+    padding-right: 2px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    background-color: lightgreen;
+    border: 1px solid black;
+}
+.Home > .ControlLine > .Time{
+    border: 2px solid black;
+}
+.Home > .ControlLine > .Day{
+    padding: 0px;
+}
+.Home > .ControlLine > .Day > .Label{
+    width: min-content;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid black;
+}
+.Home > .ControlLine > .Day > .Value{
+    width: auto;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid black;
+}
+.Home > .ControlLine > .PauseButton{
+    aspect-ratio: 1/1;
+    border: 2px solid black;
+    background-color: lightyellow;
+}
+.Home > .ControlLine > .TimeSpeed{
+    padding-left: 0px;
+    padding-right: 0px;
+}
+.Home > .ControlLine > .TimeSpeed > .Name{
+    width: min-content;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    border: 1px solid black;
+}
+.Home > .ControlLine > .TimeSpeed > .MinusButton{
+    width: auto;
+    height: 100%;
+    aspect-ratio: 1/1;   
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    background-color: lightyellow;
+    border: 1px solid black;
+}
+.Home > .ControlLine > .TimeSpeed > .Value{
+    width: auto;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    border: 1px solid black;
+}
+.Home > .ControlLine > .TimeSpeed > .PlusButton{
+    width: auto;
+    height: 100%;
+    aspect-ratio: 1/1;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    background-color: lightyellow;
+    border: 1px solid black;
+}
+.Home > .ControlLine > .StartButton{
+    border: 2px solid black;
+    background-color: lightyellow;
+}
+.Home > .StationNav{
+    width: 100%;
+    height: 5%;
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: row nowrap;
+}
+.Home > .StationNav > *{
+    width: auto;
+    height: 100%;
+    flex: 1 1 auto;
+    border: 1px solid black;
+    background-color: lightcoral;
+}
+.Home > .StationNav > *[manual]{
+    background-color: lightblue;
+}
+.Home > .GameContent{
+    width: 100%;
+    height: 90%;
+    display: flex;
+    flex-flow: row nowrap;
+}
+.Home > .GameContent > .SidePanel{
+    width: 15%;
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+}
+.Home > .GameContent > .SidePanel > .Balance{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-flow: row nowrap;
+    border: 1px solid black;
+    background-color: lightgreen;
+}
+.Home > .GameContent > .SidePanel > .Balance > .Label{
+    width: min-content;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid black;
+}
+.Home > .GameContent > .SidePanel > .Balance > .Value{
+    width: auto;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+.Home > .GameContent > .SidePanel > .List{
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    border: 1px solid black;
+    overflow: auto;
+}
+.Home > .GameContent > .SidePanel > .List > .Item{
+    width: 90%;
+    height: min-content;
+    margin: 5px;
+    display: flex;
+    flex-flow: column nowrap;
+    border: 1px solid black;
+    background-color: lightpink;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Name{
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid black;
+    background-color: lightsalmon;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info{
+    width: 100%;
+    height: auto;
+    padding: 5px;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > *{
+    margin-top: 5px;
+    margin-bottom: 5px;
+    background-color: lightgreen;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Count{
+    width: min-content;
+    height: auto;
+    display: flex;
+    flex-flow: row nowrap;
+    border: 1px solid black;
+    background-color: lightgreen;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Count > .Label{
+    width: min-content;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid black;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Count > .Value{
+    width: auto;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .GlobalPrice{
+    width: min-content;
+    height: auto;
+    display: flex;
+    flex-flow: row nowrap;
+    border: 1px solid black;
+    background-color: lightgreen;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .GlobalPrice > .Label{
+    width: min-content;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid black;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .GlobalPrice > .Value{
+    width: auto;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Price{
+    width: min-content;
+    height: 1em;
+    display: flex;
+    flex-flow: row nowrap;
+    border: 1px solid black;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Price > .Name{
+    width: min-content;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Price > .MinusButton {
+    width: auto;
+    height: 100%;
+    aspect-ratio: 1/1;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    background-color: lightyellow;
+    border-left: 1px solid black;
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Price > .Value{
+    width: auto;
+    height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    border-left: 1px solid black;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Price > .PlusButton{
+    width: auto;
+    height: 100%;
+    aspect-ratio: 1/1;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    background-color: lightyellow;
+    border-left: 1px solid black;
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+}
+.Home > .GameContent > .SidePanel > .List > .Item > .Info > .Refill{
+    width: auto;
+    height: 1.5em;
+    padding-left: 2px;
+    padding-right: 2px;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    background-color: lightyellow;
+    border: 1px solid black;
+}
+.Home > .GameContent > .TransactionList{
+    width: 85%;
+    height: 100%;
+}

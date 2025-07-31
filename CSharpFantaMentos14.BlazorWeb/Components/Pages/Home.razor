@@ -1,0 +1,243 @@
+﻿@page "/"
+@implements IDisposable
+
+<PageTitle>FuelStationModel</PageTitle>
+<div class="Home">
+    <div class="ControlLine">
+        <div class="Time">@Game.CurrentTime.Hours.ToString("D2"):@Game.CurrentTime.Minutes.ToString("D2")</div>
+        <div class="Day">
+            <div class="Label">Day</div>
+            <div class="Value">@Game.CurrentTime.Days</div>
+        </div>
+        <button class="PauseButton" @onclick=@TogglePause>
+            @if(Paused is false)
+            {
+                <text>⏸</text>
+            }
+            else
+            {
+                <text>▶</text>
+            }
+        </button>
+        <div class="TimeSpeed">
+            <div class="Name">TimeSpeed</div>
+            <button class="MinusButton" @onclick=@DecreaseTimeSpeed>-</button>
+            <div class="Value">@Game.TimeSpeed</div>
+            <button class="PlusButton" @onclick=@IncreaseTimeSpeed>+</button>
+        </div>
+        @if(Game.IsRunning is false)
+        {
+            <button class="StartButton" @onclick=@Game.StartDay>Start Day</button>
+        }
+    </div>
+    <nav class="StationNav">
+        @foreach(FuelStation station in Game.FuelStationModel.StationDictionary.Values)
+        {
+            FuelStation loc_station = station;
+            bool manual = station.Admin is ManualAdmin;
+            <button class="StationTab" manual=@manual @onclick=@SelectStation>@station.Name</button>
+
+            void SelectStation()
+            {
+                FuelStation = loc_station;
+                InvokeAsync(StateHasChanged);
+            }
+        }
+    </nav>
+    <div class="GameContent">
+        <div class="SidePanel">
+            @if(FuelStation is not null)
+            {
+                <div class="Balance">
+                    <div class="Label">Balance</div>
+                    <div class="Value">@FuelStation.Balance.ToString("F2")</div>
+                </div>
+                <div class="List">                
+                    @foreach(FuelPump pump in FuelStation.PumpDictionary.Values)
+                    {
+                        <div class="Item">
+                            <div class="Name">@pump.Name</div>
+                            <div class="Info">
+                                <div class="Count">
+                                    <div class="Label">LiterCount</div>
+                                    <div class="Value">@pump.LiterCount</div>
+                                </div>
+                                <div class="GlobalPrice">
+                                    <div class="Label">GlobalPrice</div>
+                                    <div class="Value">@Game.FuelStationModel.GlobalPriceState.FuelPriceDictionary[pump.Name].ToString("F2")</div>
+                                </div>
+                                <div class="Price">
+                                    <div class="Name">PricePerLiter</div>
+                                    @{
+                                        FuelPump loc_pump = pump;
+                                        @if(FuelStation.Admin is ManualAdmin)
+                                        {
+                                            <button class="MinusButton" @onclick=@DecreasePumpPrice>-</button>
+                                        }
+                                        <div class="Value">@pump.PricePerLiter.ToString("F1")</div>
+                                        @if(FuelStation.Admin is ManualAdmin)
+                                        {
+                                            <button class="PlusButton" @onclick=@IncreasePumpPrice>+</button>
+                                        }
+
+                                        void DecreasePumpPrice()
+                                        {
+                                            if(loc_pump.PricePerLiter > 0.1F)
+                                            {
+                                                (FuelStation.Admin as ManualAdmin)!.ChangeFuelPriceAsync(loc_pump.Name, loc_pump.PricePerLiter - 0.1F);
+                                            }
+                                        }
+                                        void IncreasePumpPrice()
+                                        {
+                                            (FuelStation.Admin as ManualAdmin)!.ChangeFuelPriceAsync(loc_pump.Name, loc_pump.PricePerLiter + 0.1F);
+                                        }
+                                    }
+                                </div>
+                                @if(FuelStation.Admin is ManualAdmin)
+                                {
+                                    loc_pump = pump;
+                                    <button class="Refill" @onclick=@RefillFuelPump>Refill: 100</button>
+
+                                    void RefillFuelPump()
+                                    {
+                                        (FuelStation.Admin as ManualAdmin)!.RefillFuelAsync(loc_pump.Name, 100);
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    <div class="Item">
+                        <div class="Name">CoffeeMachine</div>
+                        <div class="Info">
+                            <div class="Count">
+                                <div class="Label">CupCount</div>
+                                <div class="Value">@FuelStation.CoffeeMachine.CupCount</div>
+                            </div>
+                            <div class="GlobalPrice">
+                                <div class="Label">GlobalPrice</div>
+                                <div class="Value">@Game.FuelStationModel.GlobalPriceState.CoffeePrice.ToString("F2")</div>
+                            </div>
+                            <div class="Price">
+                                <div class="Name">PricePerCup</div>
+                                @{
+                                    @if(FuelStation.Admin is ManualAdmin)
+                                    {
+                                        <button class="MinusButton" @onclick=@DecreaseCoffeePrice>-</button>
+                                    }
+                                    <div class="Value">@FuelStation.CoffeeMachine.PricePerCup.ToString("F1")</div>
+                                    @if(FuelStation.Admin is ManualAdmin)
+                                    {
+                                        <button class="PlusButton" @onclick=@IncreaseCoffeePrice>+</button>
+                                    }
+
+                                    void DecreaseCoffeePrice()
+                                    {
+                                        if(FuelStation.CoffeeMachine.PricePerCup > 0.1F)
+                                        {
+                                            (FuelStation.Admin as ManualAdmin)!.ChangeCoffeePriceAsync(FuelStation.CoffeeMachine.PricePerCup - 0.1F);
+                                        }
+                                    }
+                                    void IncreaseCoffeePrice()
+                                    {
+                                        (FuelStation.Admin as ManualAdmin)!.ChangeCoffeePriceAsync(FuelStation.CoffeeMachine.PricePerCup + 0.1F);
+                                    }
+                                }
+                            </div>
+                            @if(FuelStation.Admin is ManualAdmin)
+                            {
+                                <button class="Refill" @onclick=@RefillCoffeeMachine>Refill: 10</button>
+
+                                void RefillCoffeeMachine()
+                                {
+                                    (FuelStation.Admin as ManualAdmin)!.RefillCoffeeAsync(10);
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        @if(FuelStation is not null)
+        {
+            <TransactionList FuelStation=@FuelStation />
+        }
+    </div>
+</div>
+
+@code
+{
+    #region Instance
+    private Game Game { get; } = new();
+    private bool Paused { get; set; } = false;
+    private FuelStation? FuelStation { get; set; }
+
+    ~Home()
+    {
+        Dispose();
+    }
+
+    private void TogglePause()
+    {
+        if(Paused is true)
+        {
+            Paused = false;
+            Game.ResumeDay();
+        }
+        else
+        {
+            Paused = true;
+            Game.PauseDay();
+        }
+    }
+    private void DecreaseTimeSpeed()
+    {
+        if(Game.TimeSpeed > 1)
+        {
+            Game.TimeSpeed -= 1;
+        }
+    }
+    private void IncreaseTimeSpeed()
+    {
+        if(Game.TimeSpeed < 1000)
+        {
+            Game.TimeSpeed += 1;
+        }
+    }
+    private void Render()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+    #endregion
+
+    #region Base
+    protected override void OnInitialized()
+    {
+        Game.FuelStationModel.AddAutoStation("AStation");
+        Game.FuelStationModel.AddAutoStation("BStation");
+        Game.FuelStationModel.AddAutoStation("CStation");
+        Game.FuelStationModel.AddManualStation("MyStation");
+        Game.FuelStationModel.StationDictionary["AStation"].AddFuelPump("A95");
+        Game.FuelStationModel.StationDictionary["BStation"].AddFuelPump("A95");
+        Game.FuelStationModel.StationDictionary["CStation"].AddFuelPump("A95");
+        Game.FuelStationModel.StationDictionary["MyStation"].AddFuelPump("A95");
+        Game.FuelStationModel.StationDictionary["AStation"].AddFuelPump("A92");
+        Game.FuelStationModel.StationDictionary["BStation"].AddFuelPump("A92");
+        Game.FuelStationModel.StationDictionary["CStation"].AddFuelPump("A92");
+        Game.FuelStationModel.StationDictionary["MyStation"].AddFuelPump("A92");
+        Game.FuelStationModel.StationDictionary["AStation"].AddFuelPump("Diesel");
+        Game.FuelStationModel.StationDictionary["BStation"].AddFuelPump("Diesel");
+        Game.FuelStationModel.StationDictionary["CStation"].AddFuelPump("Diesel");
+        Game.FuelStationModel.StationDictionary["MyStation"].AddFuelPump("Diesel");
+        Game.OnUpdate += Render;
+        Game.DayEnded += Render;
+    }
+    #endregion
+
+    #region IDisposable
+    public void Dispose()
+    {
+        Game.OnUpdate -= Render;
+        Game.DayEnded -= Render;
+    }
+    #endregion
+}

@@ -1,0 +1,359 @@
+﻿@code
+{
+    [Parameter] public required FuelStation FuelStation { get; set; }
+}
+
+<div class="TransactionList">
+    <div class="ControlLine">
+        <button class="SaveButton" @onclick=@SaveAsJson>Save</button>
+    </div>
+    <div class="Head">
+        <div class="ID">№</div>
+        <select class="Operation" @bind=@OperationValue>
+            <option value="Default">Operation</option>
+            @foreach(string name in FuelStation.Transactions.Select(transaction => transaction switch
+            {
+                BuyFuelTransaction or BuyCoffeeTransaction => "Buy",
+                RefillFuelTransaction or RefillCoffeeTransaction => "Refill",
+                _ => ""
+            }).Distinct())
+            {
+                <option value=@name>@name</option>
+            }
+        </select>
+        <select class="Day" @bind=@DayValue>
+            <option value="Default">Day</option>
+            @foreach(int day in FuelStation.Transactions.Select(transaction => transaction.TransactionTime.Days).Distinct())
+            {
+                <option value=@day>@day</option>
+            }
+        </select>
+        <div class="Time">
+            <SortButton @ref=@TimeButton OnClick=@OnSortButtonClick>Time</SortButton>
+        </div>   
+        <select class="Type" @bind=@TypeValue>
+            <option value="Default">Type</option>
+            @foreach(string name in FuelStation.Transactions.Select(transaction => transaction switch
+            {
+                BuyFuelTransaction trans => trans.FuelName,
+                RefillFuelTransaction trans => trans.FuelName,
+                _ => "Coffee"
+            }).Distinct())
+            {
+                <option value=@name>@name</option>
+            }
+        </select>
+        <div class="Count">
+            <SortButton @ref=@CountButton OnClick=@OnSortButtonClick>Count</SortButton>
+        </div>
+        <div class="Price">
+            <SortButton @ref=@PriceButton OnClick=@OnSortButtonClick>Price</SortButton>
+        </div>
+        <div class="TotalPrice">
+            <SortButton @ref=@TotalPriceButton OnClick=@OnSortButtonClick>TotalPrice</SortButton>
+        </div>
+    </div>
+    @foreach((int index, Transaction transaction) in Transactions.Index())
+    {
+        <div class="Item">
+            <div class="ID">@(index + 1)</div>
+            <div class="Operation">
+                @switch(transaction)
+                {
+                    case BuyFuelTransaction or BuyCoffeeTransaction:
+                    {
+                        <text>Buy</text>
+                        break;
+                    }
+                    case RefillFuelTransaction or RefillCoffeeTransaction:
+                    {
+                        <text>Refill</text>
+                        break;
+                    }
+                }
+            </div>
+            <div class="Day">@transaction.TransactionTime.Days</div>
+            <div class="Time">@transaction.TransactionTime.Hours.ToString("D2"):@transaction.TransactionTime.Minutes.ToString("D2")</div>
+            <div class="Type">
+                @switch(transaction)
+                {
+                    case BuyFuelTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.FuelName</text>
+                        break;
+                    }
+                    case RefillFuelTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.FuelName</text>
+                        break;
+                    }
+                    case BuyCoffeeTransaction or RefillCoffeeTransaction:
+                    {
+                        <text>Coffee</text>
+                        break;
+                    }
+                }
+            </div>
+            <div class="Count">
+                @switch(transaction)
+                {
+                    case BuyFuelTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.LiterCount</text>
+                        break;
+                    }
+                    case RefillFuelTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.LiterCount</text>
+                        break;
+                    }
+                    case BuyCoffeeTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.CupCount</text>
+                        break;
+                    }
+                    case RefillCoffeeTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.CupCount</text>
+                        break;
+                    }
+                }
+            </div>
+            <div class="Price">
+                @switch(transaction)
+                {
+                    case BuyFuelTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.FuelPrice.ToString("F2")</text>
+                        break;
+                    }
+                    case RefillFuelTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.GlobalFuelPrice.ToString("F2")</text>
+                        break;
+                    }
+                    case BuyCoffeeTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.CoffeePrice.ToString("F2")</text>
+                        break;
+                    }
+                    case RefillCoffeeTransaction loc_transaction:
+                    {
+                        <text>@loc_transaction.GlobalCoffeePrice.ToString("F2")</text>
+                        break;
+                    }
+                }
+            </div>
+            <div class="TotalPrice">
+                @switch(transaction)
+                {
+                    case BuyFuelTransaction loc_transaction:
+                    {
+                        <text>+@((loc_transaction.LiterCount * loc_transaction.FuelPrice).ToString("F2"))</text>
+                        break;
+                    }
+                    case RefillFuelTransaction loc_transaction:
+                    {
+                        <text>-@((loc_transaction.LiterCount * loc_transaction.GlobalFuelPrice).ToString("F2"))</text>
+                        break;
+                    }
+                    case BuyCoffeeTransaction loc_transaction:
+                    {
+                        <text>+@((loc_transaction.CupCount * loc_transaction.CoffeePrice).ToString("F2"))</text>
+                        break;
+                    }
+                    case RefillCoffeeTransaction loc_transaction:
+                    {
+                        <text>-@((loc_transaction.CupCount * loc_transaction.GlobalCoffeePrice).ToString("F2"))</text>
+                        break;
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code
+{
+    #region Static
+    private static JsonSerializerOptions JsonOptions { get; } = new()
+    {
+        WriteIndented = true,
+    };
+    #endregion
+
+    #region Instance
+    private string DayValue = "Default";
+    private string TypeValue = "Default";
+    private string OperationValue = "Default";
+    private SortButton? TimeButton = null;
+    private SortButton? CountButton = null;
+    private SortButton? PriceButton = null;
+    private SortButton? TotalPriceButton = null;
+
+    private IEnumerable<Transaction> Transactions
+    {
+        get
+        {
+            IEnumerable<Transaction> transactions = FuelStation.Transactions.Where(trans =>
+            {
+                if(OperationValue is "Default")
+                {
+                    return true;
+                }
+                return trans switch
+                {
+                    BuyFuelTransaction or BuyCoffeeTransaction => OperationValue == "Buy",
+                    RefillFuelTransaction or RefillCoffeeTransaction => OperationValue == "Refill",
+                    _ => false
+                };
+            }).Where(trans =>
+            {
+                if(DayValue is "Default")
+                {
+                    return true;
+                }
+                return trans.TransactionTime.Days == int.Parse(DayValue);
+            }).Where(trans =>
+            {
+                if(TypeValue is "Default")
+                {
+                    return true;
+                }
+                return trans switch
+                {
+                    BuyFuelTransaction loc_trans => loc_trans.FuelName == TypeValue,
+                    RefillFuelTransaction loc_trans => loc_trans.FuelName == TypeValue,
+                    BuyCoffeeTransaction or RefillCoffeeTransaction => TypeValue == "Coffee",
+                    _ => false
+                };
+            });
+            if(TimeButton?.UpDirection is not null)
+            {
+                if(TimeButton.UpDirection is true)
+                {
+                    return transactions.OrderBy(transaction => transaction.TransactionTime);
+                }
+                else
+                {
+                    return transactions.OrderByDescending(transaction => transaction.TransactionTime);
+                }
+            }
+            if(CountButton?.UpDirection is not null)
+            {
+                if(CountButton.UpDirection is true)
+                {
+                    return transactions.OrderBy(transaction => transaction switch
+                    {
+                        BuyFuelTransaction trans => trans.LiterCount,
+                        RefillFuelTransaction trans => trans.LiterCount,
+                        BuyCoffeeTransaction trans => trans.CupCount,
+                        RefillCoffeeTransaction trans => trans.CupCount,
+                        _ => uint.MaxValue
+                    });
+                }
+                else
+                {
+                    return transactions.OrderByDescending(transaction => transaction switch
+                    {
+                        BuyFuelTransaction trans => trans.LiterCount,
+                        RefillFuelTransaction trans => trans.LiterCount,
+                        BuyCoffeeTransaction trans => trans.CupCount,
+                        RefillCoffeeTransaction trans => trans.CupCount,
+                        _ => uint.MinValue
+                    });
+                }
+            }
+            if(PriceButton?.UpDirection is not null)
+            {
+                if(PriceButton.UpDirection is true)
+                {
+                    return transactions.OrderBy(transaction => transaction switch
+                    {
+                        BuyFuelTransaction trans => trans.FuelPrice,
+                        RefillFuelTransaction trans => trans.GlobalFuelPrice,
+                        BuyCoffeeTransaction trans => trans.CoffeePrice,
+                        RefillCoffeeTransaction trans => trans.GlobalCoffeePrice,
+                        _ => int.MaxValue
+                    });
+                }
+                else
+                {
+                    return transactions.OrderByDescending(transaction => transaction switch
+                    {
+                        BuyFuelTransaction trans => trans.FuelPrice,
+                        RefillFuelTransaction trans => trans.GlobalFuelPrice,
+                        BuyCoffeeTransaction trans => trans.CoffeePrice,
+                        RefillCoffeeTransaction trans => trans.GlobalCoffeePrice,
+                        _ => int.MinValue
+                    });
+                }
+            }
+            if(TotalPriceButton?.UpDirection is not null)
+            {
+                if(TotalPriceButton.UpDirection is true)
+                {
+                    return transactions.OrderBy(transaction => transaction switch
+                    {
+                        BuyFuelTransaction trans => trans.FuelPrice * trans.LiterCount,
+                        RefillFuelTransaction trans => -trans.GlobalFuelPrice * trans.LiterCount,
+                        BuyCoffeeTransaction trans => trans.CoffeePrice * trans.CupCount,
+                        RefillCoffeeTransaction trans => -trans.GlobalCoffeePrice * trans.CupCount,
+                        _ => int.MaxValue
+                    });
+                }
+                else
+                {
+                    return transactions.OrderByDescending(transaction => transaction switch
+                    {
+                        BuyFuelTransaction trans => trans.FuelPrice * trans.LiterCount,
+                        RefillFuelTransaction trans => -trans.GlobalFuelPrice * trans.LiterCount,
+                        BuyCoffeeTransaction trans => trans.CoffeePrice * trans.CupCount,
+                        RefillCoffeeTransaction trans => -trans.GlobalCoffeePrice * trans.CupCount,
+                        _ => int.MinValue
+                    });
+                }
+            }
+            return transactions;
+        }
+    }
+
+    private void OnSortButtonClick(SortButton sender)
+    {
+        if(TimeButton != sender)
+        {
+            TimeButton?.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object?>()
+            { 
+                ["UpDirection"] = null 
+            }));
+        }
+        if(CountButton != sender)
+        {
+            CountButton?.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object?>()
+            { 
+                ["UpDirection"] = null 
+            }));
+        }
+        if(PriceButton != sender)
+        {
+            PriceButton?.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object?>()
+            {
+                ["UpDirection"] = null
+            }));
+        }
+        if(TotalPriceButton != sender)
+        {
+            TotalPriceButton?.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object?>()
+            {
+                ["UpDirection"] = null
+            }));
+        }
+    }
+    private void SaveAsJson()
+    {
+        string file_name = $"TransactionList_{FuelStation.Name}_{FuelStation.Model.Game.CurrentTime.ToString().Replace(':', '.')}.json";
+        File.Create(file_name).Dispose();
+        File.WriteAllTextAsync(file_name, JsonSerializer.Serialize(FuelStation.Transactions, JsonOptions));
+    }
+    #endregion
+}

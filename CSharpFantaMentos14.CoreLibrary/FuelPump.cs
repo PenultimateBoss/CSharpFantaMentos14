@@ -22,6 +22,10 @@ public sealed class FuelPump(string name, FuelStation fuel_station)
 
     public bool Buy(uint liter_count)
     {
+        if(liter_count is 0)
+        {
+            return true;
+        }
         if(liter_count > LiterCount)
         {
             return false;
@@ -34,14 +38,19 @@ public sealed class FuelPump(string name, FuelStation fuel_station)
     }
     public bool Refill(uint liter_count)
     {
-        double price = FuelStation.Model.GlobalPriceState.FuelPriceDictionary[Name];
-        if(price * liter_count > FuelStation.Balance)
+        if(liter_count is 0)
+        {
+            return true;
+        }
+        double global_price = FuelStation.Model.GlobalPriceState.FuelPriceDictionary[Name];
+        double total_price = global_price * liter_count;
+        if(total_price > FuelStation.Balance)
         {
             return false;
         }
-        RefillFuelTransaction transaction = new(FuelStation.Model.Game.CurrentTime, Name, liter_count, price);
+        RefillFuelTransaction transaction = new(FuelStation.Model.Game.CurrentTime, Name, liter_count, global_price);
         FuelStation.transactions.Add(transaction);
-        FuelStation.Balance -= price;
+        FuelStation.Balance -= total_price;
         LiterCount += liter_count;
         return true;
     }
